@@ -3,8 +3,12 @@ import crawler
 import download
 import prompt
 import json
+from flask import Flask
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
+app.config['JSON_AS_ASCII']=False
 
 @app.route('/upload', methods=['POST'])
 def urljson():
@@ -18,4 +22,4 @@ def urljson():
     return jsonify({"response": response})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0')

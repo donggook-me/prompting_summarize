@@ -2,14 +2,10 @@ import openai
 import os
 import csv
 import tiktoken
-from dotenv import load_dotenv
-
-# load .env
-load_dotenv()
 
 class prompt_work():
     
-    openai.api_key = os.environ.get('OPENAI_API_KEY_SERVICE')
+    openai.api_key = "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"
     
     # 클래스 시작 함수
     def __init__(self, output_filename) -> None:
