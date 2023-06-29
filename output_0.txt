@@ -1,0 +1,14 @@
+--------------
+human_text--기능의 구현을 도움받음
+--------------
+human_and_gpt_with_code--ncursesw 라이브러리의 구현을 도움받음.
+--ncursesw를 사용하기 위한 명령어를 제공함.
+--ncursesw는 Mac의 brew 또는 clang에서 호환됨.
+--ncursesw 라이브러리를 설치하는 방법을 안내함.
+--ncursesw/curses.h 파일을 찾을 수 없는 오류를 해결하는 방법을 안내함.
+--------------
+human_and_gpt_without_code--ncursesw 라이브러리의 구현을 도움받음.
+--ncursesw를 사용하기 위한 컴파일 및 실행 단계를 안내함.
+--macOS에서 ncursesw를 설치하는 방법을 안내함.
+--ncurses와 ncursesw를 함께 사용하기 위한 컴파일 및 링크 명령어를 제공함.
+--ncursesw/curses.h 파일을 찾을 수 없는 오류를 해결하기 위한 단계를 안내함.
