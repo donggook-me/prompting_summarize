@@ -108,9 +108,8 @@ class prompt_work():
         summarizing_prompt = f"""
         Hello, you are now my assistant summarizing this content. 
         This conversational data is the content of questions that arose during coding or how to modify the code.
-        Among them, analyze the words and ask them to write a code, 
-        or summarize them around the part where you ask them to revise the code.
-        Please make this summarize into {self.max_tokens/2/self.split_size} tokens count.
+        Among the contents of the conversation, focus on the parts that requested code writing or modification, bug fixing, etc.
+        Please make this sentences summarized into short version sentenced in {self.max_tokens/2/self.split_size} tokens count.
         ```{parsed_prompt}```
         """
         response = self.get_completion(summarizing_prompt)
@@ -131,7 +130,7 @@ class prompt_work():
 
         If there are irregular sequential data or expression, just skip it. 
         
-        And Also, If you have any previous data, just throw it away. And focus on the data I'll give you.
+        And Also, If you have any previous data, just erase it. And focus on the data I'll give you.
 
         STEP1. You'll get each text data, that includes my question "how to make this function? or why this doesn't work?" and sequentially your answer about how to write in.
 
@@ -139,7 +138,8 @@ class prompt_work():
 
         STEP3. Translate it in Korean. 
 
-        STEP4. Change Korean sentence into one of this Format "XXX 개념을 질문함.", "XXX 기능의 구현을 도움받음.", "XXX 기능의 코드 수정을 도움받음", "XXX 에러 발생의 수정을 도움받음", You'll replace XXX with what you've extracted.
+        STEP4. Change Korean sentence into one of this Format "XXX 개념을 질문함.", "XXX 기능의 구현을 도움받음.", "XXX 기능의 코드 수정을 도움받음", "XXX 에러 발생의 수정을 도움받음",
+        You'll replace XXX with what you've extracted. And Please end each line with this style of word "받음" or "했음".
         
         STEP5. Write only one sentence on each line. Do not make over 5 lines.
         
