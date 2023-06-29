@@ -140,7 +140,7 @@ class prompt_work():
             file.write(start_sentence + "\n")
             file.write(response + "\n")
 
-        print(f"{ver_name} Summary saved to {filename} successfully!")
+        print(f"{start_sentence} Summary saved to {filename} successfully!")
         return response
     
     
