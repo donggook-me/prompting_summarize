@@ -102,10 +102,11 @@ class prompt_work():
         ```{parsed_prompt}```
         """
         response = self.get_completion(summarizing_prompt)
+        print("토큰 사이즈 초과로, 분할하여 요약 중..." + "\n") 
         return response
         
     # 요약하는 프로그래밍-조수 역할 부여하여 GPT 에 요청하는 함수.
-    def summarize_func(self, ver_name, filename):
+    def summarize_func(self, start_sentence, filename):
         
         # 토큰 개수가 8000 을 넘을시, 여러개의 조각으로 나눠서 각각 요약한 뒤 다시 합쳐서 요청.
         tokens_count = self.num_tokens_from_string(self.prompt, "cl100k_base")
@@ -123,7 +124,9 @@ class prompt_work():
 
         STEP3. Translate it in Korean. 
 
-        STEP4. Change Korean sentence into this Format "-- 어떤 요청을 받아 -- 기능의 구현을 도움받음."
+        STEP4. Change Korean sentence into one of this Format " XXX 기능의 구현을 도움받음.", "XXX 기능의 코드 수정을 도움받음", "XXX 에러 발생의 수정을 도움받음", You'll replace XXX with what you've extracted.
+        
+        STEP5. Write only one sentence on each line.
         
         execute this step with beflow data. This data is preSummarized data(focused on prompt user asked for gpt to make or write or fix code)
         
@@ -132,19 +135,10 @@ class prompt_work():
         
         response = self.get_completion(self.prompt)
 
-        # Check if the file already exists
-        if os.path.exists(filename):
-            # File already exists, open it in append mode
-            with open(filename, "a", encoding="utf-8") as file:
-                file.write("--------------" + "\n")
-                file.write(ver_name)
-                file.write(response + "\n")
-        else:
-            # File doesn't exist, create a new file and write to it
-            with open(filename, "w", encoding="utf-8") as file:
-                file.write("--------------" + "\n")
-                file.write(ver_name + "\n")
-                file.write(response + "\n")
+        # File doesn't exist, create a new file and write to it
+        with open(filename, "w", encoding="utf-8") as file:
+            file.write(start_sentence + "\n")
+            file.write(response + "\n")
 
         print(f"{ver_name} Summary saved to {filename} successfully!")
         return response
@@ -167,7 +161,7 @@ class prompt_work():
         # user + gpt data without code
         result_text = self.load_text_without_code(csv_filename)
         self.prompt = f"""{result_text}"""
-        response_txt = self.summarize_func("human_and_gpt_without_code", self.filename)
+        response_txt = self.summarize_func("ChatGPT와의 질의응답을 통해 다음을 참고하였습니다.", self.filename)
         return response_txt
 
 if __name__ == '__main__':
