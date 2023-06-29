@@ -17,7 +17,7 @@ class prompt_work():
     
 
     def get_resp_text(self):
-        return self.result
+        return self.result.replace("\n", " ")
     # GPT 에 요청 함수
     def get_completion(self, prompt, model="gpt-3.5-turbo-16k"):
         messages = [{"role": "user", "content": prompt}]
