@@ -19,7 +19,7 @@ def urljson():
     url = request.get_json()
     download.download_func(url['url'])
     crawler.crawler()
-    prompt_instance = prompt.prompt_work("output_1.txt")
+    prompt_instance = prompt.prompt_work("result.txt")
     response = prompt_instance.get_resp_text()
     
     print("response is going")
