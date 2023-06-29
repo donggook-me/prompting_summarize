@@ -7,7 +7,6 @@ import threading
 
 
 class prompt_work():
-    # 클래스 시작 함수
     def __init__(self, output_filename) -> None:
         self.filename = output_filename
         self.max_tokens = 16000
@@ -15,10 +14,11 @@ class prompt_work():
         self.prompt = ""
         self.result = self.run_all()
     
-
+    # class init return function
     def get_resp_text(self):
         return self.result.replace("\n", " ")
-    # GPT 에 요청 함수
+    
+    # GPT Chat api call func
     def get_completion(self, prompt, model="gpt-3.5-turbo-16k"):
         messages = [{"role": "user", "content": prompt}]
         response = openai.ChatCompletion.create(
@@ -73,7 +73,7 @@ class prompt_work():
         print(f"token count is....{prompt_tokens}")
         
         if prompt_tokens > (self.max_tokens/2):
-            # 16K 의 절반 -> 8K 보다 프롬팅이 클시 전처리 요구됨.
+            # half of 16K, because 8K is on Question, rest of 8K is used on Answering.
             self.split_size = int(prompt_tokens // (self.max_tokens/2)) + 1
             print(f"split size is {self.split_size}")
             split_prompts = []
@@ -83,7 +83,7 @@ class prompt_work():
                 split_prompts.append([prompt[start_idx : end_idx]])
                 print(f"{index} segment range is ({start_idx},{end_idx})")
 
-
+            # running each splitted text dummy summarizing in multi-threading.
             merged_data = ""
             lock = threading.Lock()
 
@@ -101,9 +101,10 @@ class prompt_work():
             print("merged_data : ", merged_data + "\n")
             return merged_data
         else:
-            # 8K 보다 작을시 문제 없음. 
+            # if it's smaller than 8K, just go Straight.
             return prompt
 
+    # it is used when text prompt is bigger than 8K.
     def summarize_each_piece(self, parsed_prompt) -> str:
         summarizing_prompt = f"""
         Hello, you are now my assistant summarizing this content. 
@@ -117,10 +118,10 @@ class prompt_work():
         return response
 
         
-    # 요약하는 프로그래밍-조수 역할 부여하여 GPT 에 요청하는 함수.
+    # Asking GPT to act like programming-summarizing assistant.
     def summarize_func(self, start_sentence, filename):
         
-        # 토큰 개수가 8000 을 넘을시, 여러개의 조각으로 나눠서 각각 요약한 뒤 다시 합쳐서 요청.
+        # if token count is bigger than 8K, go to the func, split and merge into smaller set.
         tokens_count = self.num_tokens_from_string(self.prompt, "cl100k_base")
         processed_data = self.compressPrompt(self.prompt, tokens_count)
         
@@ -150,7 +151,7 @@ class prompt_work():
         
         response = self.get_completion(self.prompt)
 
-        # File doesn't exist, create a new file and write to it
+        # open new file and write response to it.
         with open(filename, "w", encoding="utf-8") as file:
             file.write(start_sentence)
             file.write(response)
@@ -159,7 +160,7 @@ class prompt_work():
         return response
     
     
-    # 전체 실행 함수
+    # main running func.
     def run_all(self):
         csv_filename = "chat_data.csv"
 

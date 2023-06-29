@@ -14,6 +14,7 @@ CORS(app)
 app.config['JSON_AS_ASCII'] = False
 openai.api_key = os.environ.get('OPENAI_API_KEY')
 
+# when user put URL on our client side form.
 @app.route('/upload', methods=['POST'])
 def urljson():
     url = request.get_json()
