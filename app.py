@@ -1,10 +1,18 @@
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 import crawler
 import download
 import prompt
 import json
+import os
+from dotenv import load_dotenv
+load_dotenv()
+import openai
 
 app = Flask(__name__)
+CORS(app)
+app.config['JSON_AS_ASCII'] = False
+openai.api_key = os.environ.get('OPENAI_API_KEY')
 
 @app.route('/upload', methods=['POST'])
 def urljson():
@@ -18,4 +26,4 @@ def urljson():
     return jsonify({"response": response})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=8080)
