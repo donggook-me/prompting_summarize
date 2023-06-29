@@ -2,15 +2,8 @@ import openai
 import os
 import csv
 import tiktoken
-from dotenv import load_dotenv
-
-# load .env
-load_dotenv()
 
 class prompt_work():
-    
-    openai.api_key = os.environ.get('OPENAI_API_KEY_SERVICE')
-    
     # 클래스 시작 함수
     def __init__(self, output_filename) -> None:
         self.filename = output_filename
@@ -18,6 +11,7 @@ class prompt_work():
         self.split_size = 1
         self.prompt = ""
         self.result = self.run_all()
+    
 
     def get_resp_text(self):
         return self.result
