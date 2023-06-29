@@ -2,6 +2,9 @@ import openai
 import os
 import csv
 import tiktoken
+import concurrent.futures
+import threading
+
 
 class prompt_work():
     # 클래스 시작 함수
@@ -65,8 +68,8 @@ class prompt_work():
         encoding = tiktoken.get_encoding(encoding_name)
         num_tokens = len(encoding.encode(string))
         return num_tokens    
-    
-    def compressPrompt(self,prompt, prompt_tokens):
+
+    def compressPrompt(self, prompt, prompt_tokens):
         print(f"token count is....{prompt_tokens}")
         
         if prompt_tokens > (self.max_tokens/2):
@@ -74,18 +77,33 @@ class prompt_work():
             self.split_size = int(prompt_tokens // (self.max_tokens/2)) + 1
             print(f"split size is {self.split_size}")
             split_prompts = []
-            for i in range(0, self.split_size):
-                split_prompts.append([prompt[int(i * (self.max_tokens // 2)) : int((i + 1) * (self.max_tokens // 2))]])
+            for index, i in enumerate(range(0, self.split_size)):
+                start_idx = (int(len(prompt) / self.split_size) * i)
+                end_idx = (int(len(prompt) / self.split_size) * (i+1) ) - 1
+                split_prompts.append([prompt[start_idx : end_idx]])
+                print(f"{index} segment range is ({start_idx},{end_idx})")
+
 
             merged_data = ""
-            for prom in split_prompts:
-                merged_data += self.summarize_each_piece(prom)
+            lock = threading.Lock()
+
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                futures = []
+                for prom in split_prompts:
+                    future = executor.submit(self.summarize_each_piece, prom)
+                    futures.append(future)
+
+                for future in concurrent.futures.as_completed(futures):
+                    result = future.result()
+                    with lock:
+                        merged_data += result
+
             print("merged_data : ", merged_data + "\n")
             return merged_data
         else:
             # 8K 보다 작을시 문제 없음. 
             return prompt
-    
+
     def summarize_each_piece(self, parsed_prompt) -> str:
         summarizing_prompt = f"""
         Hello, you are now my assistant summarizing this content. 
@@ -98,6 +116,7 @@ class prompt_work():
         response = self.get_completion(summarizing_prompt)
         print("토큰 사이즈 초과로, 분할하여 요약 중..." + "\n") 
         return response
+
         
     # 요약하는 프로그래밍-조수 역할 부여하여 GPT 에 요청하는 함수.
     def summarize_func(self, start_sentence, filename):
@@ -111,6 +130,8 @@ class prompt_work():
         Hi, You are programming-assistant. I'll give conversation history with you. I hope you summarize it into at least 3 dotted text in korean. Can you do this Following STEP?
 
         If there are irregular sequential data or expression, just skip it. 
+        
+        And Also, If you have any previous data, just throw it away. And focus on the data I'll give you.
 
         STEP1. You'll get each text data, that includes my question "how to make this function? or why this doesn't work?" and sequentially your answer about how to write in.
 
@@ -118,9 +139,9 @@ class prompt_work():
 
         STEP3. Translate it in Korean. 
 
-        STEP4. Change Korean sentence into one of this Format " XXX 기능의 구현을 도움받음.", "XXX 기능의 코드 수정을 도움받음", "XXX 에러 발생의 수정을 도움받음", You'll replace XXX with what you've extracted.
+        STEP4. Change Korean sentence into one of this Format "XXX 개념을 질문함.", "XXX 기능의 구현을 도움받음.", "XXX 기능의 코드 수정을 도움받음", "XXX 에러 발생의 수정을 도움받음", You'll replace XXX with what you've extracted.
         
-        STEP5. Write only one sentence on each line.
+        STEP5. Write only one sentence on each line. Do not make over 5 lines.
         
         execute this step with beflow data. This data is preSummarized data(focused on prompt user asked for gpt to make or write or fix code)
         
@@ -131,8 +152,8 @@ class prompt_work():
 
         # File doesn't exist, create a new file and write to it
         with open(filename, "w", encoding="utf-8") as file:
-            file.write(start_sentence + "\n")
-            file.write(response + "\n")
+            file.write(start_sentence)
+            file.write(response)
 
         print(f"{start_sentence} Summary saved to {filename} successfully!")
         return response
